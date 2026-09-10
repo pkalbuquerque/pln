@@ -21,6 +21,9 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 SITEMAP = "https://www.lance.com.br/sitemap/news/today.xml"
+# Sitemap de artigos recentes: ~1200 URLs, muito maior que o de "hoje".
+SITEMAP_RECENTES = "https://www.lance.com.br/sitemap/articles-current.xml"
+FONTES_SITEMAP = {"hoje": SITEMAP, "recentes": SITEMAP_RECENTES}
 SAIDA = Path("outputs/noticias_lance.json")
 SECOES_FUTEBOL_BRASILEIRO = {
     "brasileirao", "copa-do-brasil", "futebol-nacional", "america-mineiro",
@@ -110,7 +113,9 @@ def ler_sitemap(xml: str) -> list[dict[str, Any]]:
                 imagem = primeiro_texto(filho, "loc") or None
             elif local == "lastmod" and not publicado:
                 publicado = iso_utc(normalizar_espacos(filho.text))
-        if url and titulo:
+        # O sitemap de "hoje" traz título; o de artigos recentes traz apenas a
+        # URL e a data — nesse caso o título é obtido depois, na própria página.
+        if url:
             itens.append({"url": url, "titulo": titulo, "publicado_em": publicado, "imagem": imagem})
     return sorted(itens, key=lambda item: item.get("publicado_em") or "", reverse=True)
 
@@ -205,8 +210,8 @@ def extrair_artigo(html: str, item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def coletar(limite: int = 30, todos_esportes: bool = False, concorrencia: int = 3) -> tuple[list[dict[str, Any]], list[dict[str, str]], int]:
-    itens = ler_sitemap(obter_texto(SITEMAP))
+def coletar(limite: int = 30, todos_esportes: bool = False, concorrencia: int = 3, sitemap: str = SITEMAP) -> tuple[list[dict[str, Any]], list[dict[str, str]], int]:
+    itens = ler_sitemap(obter_texto(sitemap))
     candidatos = [item for item in itens if todos_esportes or eh_futebol_brasileiro(item)][:limite]
 
     def trabalho(item: dict[str, Any]):
@@ -222,7 +227,7 @@ def coletar(limite: int = 30, todos_esportes: bool = False, concorrencia: int = 
     return noticias, erros, len(itens)
 
 
-def salvar(noticias: list[dict[str, Any]], erros: list[dict[str, str]], total_sitemap: int, acumular: bool, saida: Path = SAIDA) -> Path:
+def salvar(noticias: list[dict[str, Any]], erros: list[dict[str, str]], total_sitemap: int, acumular: bool, saida: Path = SAIDA, sitemap: str = SITEMAP) -> Path:
     if acumular and saida.exists():
         anteriores = json.loads(saida.read_text(encoding="utf-8")).get("noticias", [])
         por_id = {noticia["id"]: noticia for noticia in anteriores}
@@ -230,7 +235,7 @@ def salvar(noticias: list[dict[str, Any]], erros: list[dict[str, str]], total_si
         noticias = sorted(por_id.values(), key=lambda item: item.get("publicado_em") or "", reverse=True)
     saida.parent.mkdir(parents=True, exist_ok=True)
     documento = {
-        "fonte": SITEMAP,
+        "fonte": sitemap,
         "extraido_em": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "filtro": "futebol_brasileiro",
         "total_itens_no_sitemap": total_sitemap,
@@ -252,11 +257,16 @@ def main() -> None:
     parser.add_argument("--todos", action="store_true", help="inclui todos os esportes")
     parser.add_argument("--acumular", action="store_true", help="preserva notícias de execuções anteriores")
     parser.add_argument("--concorrencia", type=int, default=3, choices=range(1, 6))
+    parser.add_argument(
+        "--fonte", choices=sorted(FONTES_SITEMAP), default="recentes",
+        help="'hoje' = notícias do dia; 'recentes' = artigos de vários dias (padrão)",
+    )
     args = parser.parse_args()
     if args.limite < 1:
         parser.error("--limite deve ser maior que zero")
-    noticias, erros, total = coletar(args.limite, args.todos, args.concorrencia)
-    caminho = salvar(noticias, erros, total, args.acumular)
+    sitemap = FONTES_SITEMAP[args.fonte]
+    noticias, erros, total = coletar(args.limite, args.todos, args.concorrencia, sitemap)
+    caminho = salvar(noticias, erros, total, args.acumular, sitemap=sitemap)
     print(f"{len(noticias)} notícias coletadas; {len(erros)} erros.")
     print(f"Base bruta: {caminho.resolve()}")
 

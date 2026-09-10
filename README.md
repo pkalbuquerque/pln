@@ -30,17 +30,26 @@ pip install -r requirements.txt
 
 ## Execução
 
-Executar todo o pipeline com até 30 notícias:
+Executar todo o pipeline com até 150 notícias (fonte padrão: artigos recentes de vários dias):
 
 ```bash
-python pipeline.py --limite 30
+python pipeline.py --limite 150
 ```
 
 Somente a coleta:
 
 ```bash
-python coletar_lance.py --limite 30
+python coletar_lance.py --limite 150 --concorrencia 5
 ```
+
+### Fontes de sitemap
+
+O parâmetro `--fonte` escolhe a abrangência temporal:
+
+- `--fonte recentes` (padrão): sitemap `articles-current.xml`, com ~1200 artigos de **vários dias** — permite montar bases de 100+ notícias.
+- `--fonte hoje`: sitemap `news/today.xml`, apenas as notícias **do dia**.
+
+Ambas as fontes são do próprio Lance!; muda somente a janela de tempo.
 
 Somente o pré-processamento de uma base já coletada:
 
@@ -64,10 +73,10 @@ O modo incremental elimina duplicatas usando um identificador calculado a partir
 
 ## Procedimento de coleta
 
-1. Baixa o sitemap de notícias do dia.
-2. Obtém título, URL, data e imagem de cada entrada.
+1. Baixa o sitemap escolhido (`articles-current.xml`, de vários dias, por padrão; ou `news/today.xml`).
+2. Obtém URL, data e, quando disponível, título e imagem de cada entrada; nos artigos recentes o título é lido depois, na própria página.
 3. Mantém seções de futebol brasileiro, como clubes, Brasileirão, Copa do Brasil e Futebol Nacional.
-4. Acessa no máximo três matérias simultaneamente, com timeout, repetição em caso de falha e identificação de uso acadêmico.
+4. Acessa as matérias em paralelo (até cinco simultâneas), com timeout, repetição em caso de falha e identificação de uso acadêmico.
 5. Lê os metadados JSON-LD e o corpo HTML de cada matéria.
 6. Remove publicidade, apostas, chamadas de matérias relacionadas e mensagens institucionais.
 7. Rejeita páginas com menos de 50 palavras e registra erros sem interromper a coleta inteira.
