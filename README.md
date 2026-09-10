@@ -13,6 +13,7 @@ A descoberta das matérias usa o [sitemap oficial de notícias](https://www.lanc
 - `coletar_lance.py`: coleta, filtra e limpa as matérias.
 - `preprocessar.py`: normaliza, tokeniza, remove ruídos, pontuação e stopwords, além de gerar stems e lemas.
 - `pipeline.py`: executa coleta e pré-processamento em uma chamada.
+- `analise_lance.ipynb`: notebook que documenta e narra todas as etapas, com análise exploratória e comparação de recortes amostrais (rodada bônus).
 - `DICIONARIO_DADOS.md`: explica todos os campos das bases.
 - `test/test_pipeline.py`: testes automatizados das etapas principais.
 - `outputs/`: bases bruta e processada, nos formatos JSON, JSONL e CSV.
@@ -45,6 +46,12 @@ Somente o pré-processamento de uma base já coletada:
 
 ```bash
 python preprocessar.py
+```
+
+Para explorar todo o fluxo com narrativa, gráficos e a análise bônus, abra o notebook:
+
+```bash
+jupyter notebook analise_lance.ipynb
 ```
 
 Para acrescentar notícias novas sem apagar as anteriores:

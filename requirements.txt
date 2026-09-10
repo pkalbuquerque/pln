@@ -1,3 +1,6 @@
 beautifulsoup4>=4.12,<5
 nltk>=3.9,<4
 simplemma>=1.1,<2
+pandas>=2.0,<3
+matplotlib>=3.7,<4
+jupyter>=1.0,<2
