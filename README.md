@@ -14,6 +14,9 @@ A descoberta das matérias usa o [sitemap oficial de notícias](https://www.lanc
 - `preprocessar.py`: normaliza, tokeniza, remove ruídos, pontuação e stopwords, além de gerar stems e lemas.
 - `pipeline.py`: executa coleta e pré-processamento em uma chamada.
 - `analise_lance.ipynb`: notebook que documenta e narra todas as etapas, com análise exploratória e comparação de recortes amostrais (rodada bônus).
+- `PLN_Trabalho_Lance.ipynb`: trabalho baseado na Aula 6 (BoW, TF-IDF, similaridade e clustering K-Means).
+- `PLN_Aula7_Busca_Semantica_Lance.ipynb`: trabalho baseado na Aula 7 (Word2Vec, BERTimbau e busca semântica, comparados ao TF-IDF).
+- `PLN_Aula8_Classificacao_Lance.ipynb`: trabalho baseado na aula de classificação (TF-IDF + regressão logística, binária e multiclasse).
 - `DICIONARIO_DADOS.md`: explica todos os campos das bases.
 - `test/test_pipeline.py`: testes automatizados das etapas principais.
 - `outputs/`: bases bruta e processada, nos formatos JSON, JSONL e CSV.
